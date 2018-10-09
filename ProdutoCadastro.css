@@ -1,0 +1,259 @@
+﻿.btn-100 {
+    width: 100px;
+}
+
+.card-body {
+    padding: 0;
+}
+
+.col-fixed-130px {
+    width: 150px;
+}
+
+.col-offset-130px {
+    width: calc(100% - 150px);
+}
+
+.row-top {
+    margin-top: 20px;
+}
+
+#mdlPerfilContent {
+    max-height: 500px;
+}
+
+    #mdlPerfilContent .modal-header {
+        max-height: 100px;
+    }
+
+    #mdlPerfilContent .modal-body-col {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    #mdlPerfilContent .modal-body-row {
+        height: 100%;
+    }
+
+#mdlEstoqueContent {
+    max-height: 600px;
+}
+
+    #mdlEstoqueContent .modal-header {
+        max-height: 100px;
+    }
+
+    #mdlEstoqueContent .modal-body-col {
+        max-height: 450px;
+        overflow-y: auto;
+    }
+
+.font-1 {
+    font-size: 0.9rem;
+}
+
+.modal-dialog-custo {
+    padding-top: 30px;
+    max-width: 840px;
+}
+
+.pagination {
+    margin: 0px;
+}
+
+.botaoPesquisa {
+    height: 40px;
+    width: 110px;
+}
+
+.botaoFechar, .botaoLimpar, .botaoNovo {
+    height: 40px;
+    width: 90px;
+}
+
+.container-full {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.jumbotron-nav {
+    margin-bottom: 0;
+    padding-top: 15px;
+    padding-bottom: 25px;
+}
+
+.table-head-sort {
+    cursor: s-resize;
+    overflow: hidden;
+}
+
+.div-principal {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.imgProduto {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+}
+
+.table-produto {
+    min-height: 250px;
+    max-height: 450px;
+    margin-top: 15px;
+}
+
+    .table-produto > tbody > tr > td:nth-child(1),
+    .table-produto > thead > tr > th:nth-child(1),
+    .table-produto > tbody > tr > td:nth-child(2),
+    .table-produto > thead > tr > th:nth-child(2),
+    .table-produto > tbody > tr > td:nth-child(3),
+    .table-produto > thead > tr > th:nth-child(3),
+    .table-produto > tbody > tr > td:nth-child(5),
+    .table-produto > thead > tr > th:nth-child(5) {
+        width: 7%;
+        float: left;
+    }
+
+    .table-produto > tbody > tr > td:nth-child(4),
+    .table-produto > thead > tr > th:nth-child(4) {
+        width: 35%;
+        float: left;
+    }
+
+    .table-produto > tbody > tr > td:nth-child(6),
+    .table-produto > thead > tr > th:nth-child(6),
+    .table-produto > tbody > tr > td:nth-child(7),
+    .table-produto > thead > tr > th:nth-child(7),
+    .table-produto > tbody > tr > td:nth-child(8),
+    .table-produto > thead > tr > th:nth-child(8) {
+        width: 10%;
+        float: left;
+    }
+
+
+.table-logCusto {
+    max-height: 450px;
+}
+
+    .table-logCusto > tbody > tr > td:nth-child(1),
+    .table-logCusto > thead > tr > th:nth-child(1),
+    .table-logCusto > tbody > tr > td:nth-child(2),
+    .table-logCusto > thead > tr > th:nth-child(2),
+    .table-logCusto > tbody > tr > td:nth-child(3),
+    .table-logCusto > thead > tr > th:nth-child(3),
+    .table-logCusto > tbody > tr > td:nth-child(4),
+    .table-logCusto > thead > tr > th:nth-child(4),
+    .table-logCusto > tbody > tr > td:nth-child(6),
+    .table-logCusto > thead > tr > th:nth-child(6) {
+        width: 17%;
+        float: left;
+    }
+
+    .table-logCusto > tbody > tr > td:nth-child(2),
+    .table-logCusto > thead > tr > th:nth-child(2),
+    .table-logCusto > tbody > tr > td:nth-child(3),
+    .table-logCusto > thead > tr > th:nth-child(3),
+    .table-logCusto > tbody > tr > td:nth-child(4),
+    .table-logCusto > thead > tr > th:nth-child(4) {
+    }
+
+    .table-logCusto > tbody > tr > td:nth-child(5),
+    .table-logCusto > thead > tr > th:nth-child(5) {
+        width: 15%;
+        float: left;
+    }
+
+.table-complementar {
+    max-height: 450px;
+}
+
+.table-similar {
+    max-height: 450px;
+}
+
+.header-fixed {
+    width: 100%
+}
+
+    .header-fixed > thead,
+    .header-fixed > tbody,
+    .header-fixed > thead > tr,
+    .header-fixed > tbody > tr,
+    .header-fixed > thead > tr > th,
+    .header-fixed > tbody > tr > td {
+        display: block;
+    }
+
+        .header-fixed > tbody > tr:after,
+        .header-fixed > thead > tr:after {
+            content: ' ';
+            display: block;
+            visibility: hidden;
+            clear: both;
+        }
+
+    .header-fixed > tbody {
+        overflow-y: auto;
+        max-height: 260px;
+        font-size: 10px;
+        cursor: pointer;
+    }
+
+        .header-fixed > tbody > tr > td,
+        .header-fixed > thead > tr > th {
+            padding: 4px;
+            white-space: nowrap;
+            overflow: hidden; /* <- this does seem to be required */
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+        }
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    min-height: 32px;
+}
+
+.select2-container .select2-selection {
+    min-height: calc(2.25rem + 2px);
+    border-color: #ced4da;
+    font-size: 1rem;
+    font-family: Roboto,Helvetica Neue,sans-serif;
+    padding-top: 4px;
+}
+
+    .select2-container .select2-selection:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0px 0px 0px 0.2rem rgba(0,123,255,0.25);
+    }
+
+    .select2-container .select2-selection[aria-expanded=true] {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0px 0px 0px 0.2rem rgba(0,123,255,0.25);
+    }
+
+md-toast.sucesso .md-toast-content {
+    background-color: blue;
+}
+
+md-toast.erro .md-toast-content {
+    background-color: red;
+}
+
+.md-tab {
+    text-transform: none !important;
+}
+
+md-tab-data {
+    opacity: 1 !important;
+    display: table !important;
+    right: 0 !important;
+    left: inherit !important;
+    z-index: 20 !important;
+}

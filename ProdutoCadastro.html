@@ -1,0 +1,1314 @@
+﻿<!DOCTYPE html>
+<html ng-app="produtoApp">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta name="viewport" content="width=480, initial-scale=1">
+
+    <title>Cadastro de Produto</title>
+    <script src="Scripts/angular.min.js"></script>
+    <script src="Scripts/angular-aria.min.js"></script>
+    <script src="Scripts/angular-animate.min.js"></script>
+    <script src="Scripts/angular-block-ui.min.js"></script>
+    <script src="Scripts/angular-material.min.js"></script>
+
+    <link href="Content/angular-material.min.css" rel="stylesheet" />
+    <link href="Content/angular-material.layouts.min.css" rel="stylesheet" />
+    <link href="Content/angular-block-ui.min.css" rel="stylesheet" />
+
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/select2.min.css" rel="stylesheet" />
+    <link href="Content/ProdutoCadastro.css" rel="stylesheet" />
+    <link href="Content/gijgo/combined/gijgo.min.css" rel="stylesheet" />
+    
+    <script src="Scripts/moment.min.js"></script>
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="Scripts/select2.min.js"></script>
+    <script src="Scripts/gijgo/combined/gijgo.min.js"></script>
+    <script src="Scripts/gijgo/modular/tree.min.js"></script>
+
+    <script src="js/controllers/produtoCadastroCtrl.js"></script>
+    <script src="js/services/produtoCadastroAPIService.js"></script>
+    <script src="js/services/produtoTemplateAPIService.js"></script>
+    <script src="js/services/usuarioAPIService.js"></script>
+    <script src="js/services/logGeralAPIService.js"></script>
+    <script src="js/filters/produtoFilter.js"></script>
+    <script src="js/directives/select2Dir.js"></script>
+    <script src="js/directives/inputNumericoDir.js"></script>
+    <script src="js/directives/inputDataDir.js"></script>
+    <script src="js/directives/treeViewDir.js"></script>
+    <script src="js/directives/zeroInvalidoDir.js"></script>
+    <script src="js/directives/dirPagination.js"></script>
+    <script src="js/directives/fileModelDir.js"></script>
+    <script src="js/directives/produtoImgDir.js"></script>
+    <script src="js/directives/modalLogGeralDir.js"></script>
+</head>
+<body ng-controller="produtoCadastroCtrl">
+    <div class="container-fluid div-principal">
+        <div class="card" id="divPrincipal">
+            <div class="bg-primary text-white pl-3 pt-1 rounded m-1">
+                <h4 class="font-weight-bold">Cadastro de Produto</h4>
+            </div>
+
+            <div class="card-body">
+                <md-tabs md-selected="tabSelectedIndex" md-dynamic-height="true" md-border-bottom="true">
+                    <md-button ng-click="sair()" class="md-raised md-warn">Sair</md-button>
+                    <md-tab>
+                        <md-tab-label>
+                            <h5>Consulta</h5>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding">
+                                <div class="row" ng-show="usaTemplate">
+                                    <div class="col-md-4 mb-1">
+                                        <h6>Status Template:</h6>
+                                        <select ng-model="consulta.TemplateStatus" ng-options="t.Status as t.Descricao for t in statusTemplate" class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8 mb-1">
+                                        <h6>Template do Produto:</h6>
+                                        <select ng-model="consulta.TemplateId" ng-options="t.TemplateId as t.Descricao for t in templates | filter: {'Status': consulta.TemplateStatus} | orderBy: 'Descricao'" class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Código:</h6>
+                                        <input ng-model="consulta.ProdCode" ng-keyup="pesquisarKeypress($event) && pesquisar()" type="text" class="form-control" />
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>ISBN:</h6>
+                                        <input ng-model="consulta.NovoIsbn" ng-keyup="pesquisarKeypress($event) && pesquisar()" type="text" class="form-control" />
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Status:</h6>
+                                        <select ng-model="consulta.Status" ng-options="x.Status as x.Descricao for x in statusProdutoConsulta" class="form-control"></select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Fabricante:</h6>
+                                        <select select2 service="services/produtoService.asmx/ListaFornecedor" ng-model="consulta.fabricante" select-options="CodeCli as Fantasia in fornecedores" allow-clear class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Seção:</h6>
+                                        <select select2 ng-model="consulta.PerfilPai" select-options="PerfilId as PerfilDescr in perfilProduto" allow-clear class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Sub Seção:</h6>
+                                        <select ng-model="consulta.PerfilConteudo" ng-options="x.ConteudoId as x.ConteudoDescr for x in perfilFilhoProduto | filter: {'PerfilId': consulta.PerfilPai || false}" class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Situação:</h6>
+                                        <select ng-model="consulta.Situacao" ng-options="x.IsSituacao as x.DescSituacao for x in produtoSituacao" class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Origem:</h6>
+                                        <select ng-model="consulta.Origem" ng-options="o.OrigemId as o.OrigemDesc for o in origemProduto" class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Tipo de Produto:</h6>
+                                        <select ng-model="consulta.IdSubCat" ng-options="x.IdSubCat as x.Descricao for x in subCatProduto" class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Editora:</h6>
+                                        <input ng-model="consulta.Editora" ng-keyup="pesquisarKeypress($event) && pesquisar()" type="text" class="form-control" />
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Autor:</h6>
+                                        <input ng-model="consulta.Autor" ng-keyup="pesquisarKeypress($event) && pesquisar()" type="text" class="form-control" />
+                                    </div>
+                                    <div class="col-lg-2 col-md-4 col-sm-6 mb-1">
+                                        <h6>Coleção:</h6>
+                                        <select select2 service="services/produtoService.asmx/ListaProdCor" ng-model="consulta.ProdCor" select-options="CorId as CorDescr in prodCor" allow-clear class="form-control">
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-md-3">
+                                    <div class="col-lg-6 mb-1">
+                                        <div class="row">
+                                            <div class="col-xl-2 col-lg-3 col-md-2">
+                                                <h4 class="text-primary mt-2 font-weight-bold text-nowrap">Título:</h4>
+                                            </div>
+                                            <div class="col-xl-10 col-lg-9 col-md-10">
+                                                <div class="input-group input-group-lg">
+                                                    <input type="text" maxlength="50" placeholder="Descrição do produto..." class="form-control"
+                                                           ng-model="consulta.Descricao"
+                                                           ng-keyup="pesquisarKeypress($event) && pesquisar()" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 mt-1">
+                                        <div class="row">
+                                            <div class="col-sm-2 mb-1">
+                                                <button type="button" ng-click="pesquisar()" class="btn btn-primary btn-100">Pesquisar</button>
+                                            </div>
+
+                                            <div class="col-sm-10 mb-1">
+                                                <button type="button" ng-click="limparConsulta()" class="btn btn-secondary btn-100 float-right mr-2">Limpar</button>
+                                                <button type="button" ng-click="telaNovoProduto()" class="btn btn-info btn-100 float-right mr-2" title="Cadastrar um novo produto">Novo</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div id="divGridConsulta" class="col-sm-12">
+                                        <table class="table table-hover table-responsive table-produto header-fixed">
+                                            <thead class="table-head-sort table-secondary">
+                                                <tr>
+                                                    <th ng-click="sortProperty('PRODCODE')" data-toggle="tooltip" title="Código">Código</th>
+                                                    <th ng-click="sortProperty('NOVO_ISBN')" data-toggle="tooltip" title="ISBN">ISBN</th>
+                                                    <th ng-click="sortProperty('TpDescricao')" data-toggle="tooltip" title="Tipo">Tipo</th>
+                                                    <th ng-click="sortProperty('DESCRICAO')" data-toggle="tooltip" title="Título">Título</th>
+                                                    <th ng-click="sortProperty('VOLUME')" data-toggle="tooltip" title="Volume">Volume</th>
+                                                    <th ng-click="sortProperty('ANO_EDICAO')" data-toggle="tooltip" title="Ano">Ano</th>
+                                                    <th ng-click="sortProperty('PROD_GRUPO_DESC')" data-toggle="tooltip" title="Autor">Autor</th>
+                                                    <th ng-click="sortProperty('PERFIL_DESCR')" data-toggle="tooltip" title="Seção">Seção</th>
+                                                    <th ng-click="sortProperty('LINPRODDESCR')" data-toggle="tooltip" title="Editora">Editora</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-class="p.SituacaoClass" ng-click="abrirProduto(p.PRODCODE)" dir-paginate="p in produtos | orderBy : orderProperty : true | itemsPerPage:100">
+                                                    <td data-toggle="tooltip" title="{{ p.PRODCODE }}">{{ p.PRODCODE }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.NOVO_ISBN}}">{{ p.NOVO_ISBN | isbnReduzido }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.TpDescricao }}">{{ p.TpDescricao }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.DESCRICAO }}">{{ p.DESCRICAO }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.VOLUME }}">{{ p.VOLUME }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.ANO_EDICAO }}">{{ p.ANO_EDICAO }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.PROD_GRUPO_DESC }}">{{ p.PROD_GRUPO_DESC }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.PERFIL_DESCR }}">{{ p.PERFIL_DESCR }}</td>
+                                                    <td data-toggle="tooltip" title="{{ p.LINPRODDESCR }}">{{ p.LINPRODDESCR }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+
+                    <md-tab md-on-select="carregarCadastro()" label="Cadastro">
+                        <md-tab-label>
+                            <h5>Cadastro <span ng-show="produtoCarregado && formProdCad.$invalid" class="badge badge-danger float-right">!</span></h5>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding">
+                                <div ng-show="usaTemplate">
+                                    <div class="card bg-warning mb-2">
+                                        <div class="card-header">
+                                            <div class="row m-0">
+                                                <div class="col-lg-3 col-md-3">
+                                                    <h4 class="card-title">Template de Produto:</h4>
+                                                </div>
+                                                <div class="col-lg-2 col-md-3">
+                                                    <input ng-disabled="produtoCarregado" input-numerico="0" min="0" maxlength="8" type="number" ng-model="produto.TemplateId" ng-keyup="templateIdKeyUp($event)" class="form-control" />
+                                                </div>
+                                                <div class="col-lg-5 col-md-4">
+                                                    <select ng-model="produto.TemplateIdSelecionado" ng-change="templateChange(produto)" ng-options="t.TemplateId as t.Descricao for t in templates | filter: templateFiltroProduto(produto) | filter: templateFiltroTemplate(templateProdutoFiltro) | orderBy: 'Descricao' " class="form-control">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-2 col-md-2 mb-1">
+                                                    <button type="button" ng-click="templateCarregar(produto.TemplateIdSelecionado)" class="btn btn-primary btn-100 float-right mr-2" ng-class="produtoDisabled ? 'btn-danger' : ''" title="Carregar template" ng-disabled="!produto.TemplateIdSelecionado">Carregar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body" ng-show="!produtoCarregado">
+                                            <div class="row m-2">
+                                                <div class="col-sm-3 mb-1">
+                                                    <h6>Tipo de Produto:</h6>
+                                                    <select ng-disabled="produtoCarregado" ng-model="templateProdutoFiltro.IdSubCat" ng-options="x.IdSubCat as x.Descricao for x in subCatProduto" class="form-control">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-sm-3 mb-1">
+                                                    <h6>Origem:</h6>
+                                                    <select ng-disabled="produtoCarregado" ng-model="templateProdutoFiltro.OrigemId" ng-options="o.OrigemId as o.OrigemDesc for o in origemProduto" class="form-control">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-sm-3 mb-1">
+                                                    <h6>Seção:</h6>
+                                                    <select select2 ng-model="templateProdutoFiltro.PerfilId" select-options="PerfilId as PerfilDescr in perfilProduto" allow-clear class="form-control"></select>
+                                                </div>
+                                                <div class="col-sm-3 mb-1">
+                                                    <h6>Sub Seção:</h6>
+                                                    <select ng-disabled="produtoCarregado" ng-model="templateProdutoFiltro.ConteudoId" ng-options="x.ConteudoId as x.ConteudoDescr for x in perfilFilhoProduto | filter: {'PerfilId': templateProdutoFiltro.PerfilId || false}" class="form-control">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form name="formProdCad">
+                                    <div class="row m-0">
+                                        <div class="col-offset-130px">
+                                            <div class="row">
+                                                <div class="col-lg-2 col-md-3 col-sm-4 rounded border order-sm-1 pt-1">
+                                                    <div class="row">
+                                                        <div class="col-12 mb-1">
+                                                            <h6>Tipo:</h6>
+                                                            <select ng-model="produto.TipoItemProduto" zero-invalido ng-options="x.Id as x.Tipo for x in config.TipoProduto" class="form-control"
+                                                                    name="TipoItemProduto" ng-class="formProdCad.TipoItemProduto.$invalid ? 'alert-danger' : ''" ng-disabled="produtoDisabled || formProdCad.TipoItemProduto.$valid && templateProduto.config.TipoItemProduto.IsNaoHabilita" required>
+                                                                <option value=""></option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-12 mb-1">
+                                                            <div class="form-check">
+                                                                <label class="form-check-label"><input ng-model="produto.IsNaoDispWeb" ng-disabled="produtoDisabled || templateProduto.config.IsNaoDispWeb.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.IsNaoDispWeb.LabelTela ? templateProduto.config.IsNaoDispWeb.LabelTela : 'Não disp. web'}}</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12 mb-1">
+                                                            <div class="form-check">
+                                                                <label class="form-check-label"><input ng-model="produto.IsControlaEstoque" ng-disabled="produtoDisabled || templateProduto.config.IsControlaEstoque.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.IsControlaEstoque.LabelTela ? templateProduto.config.IsControlaEstoque.LabelTela : 'Controla estoque'}}</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12 mb-1">
+                                                            <div class="form-check">
+                                                                <label class="form-check-label"><input ng-model="produto.IsKit" ng-disabled="produtoDisabled || templateProduto.config.IsKit.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.IsKit.LabelTela ? templateProduto.config.IsKit.LabelTela : 'Kit'}}</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-10 col-md-9 col-sm-8 order-sm-0">
+                                                    <div class="row">
+                                                        <div class="col-md-6 col-sm-12">
+                                                            <div class="row">
+                                                                <div class="col-md-6 col-sm-12 mb-1">
+                                                                    <h6>Código:</h6>
+                                                                    <input type="text" disabled="disabled" ng-model="produto.ProdCode" class="form-control">
+                                                                </div>
+                                                                <div class="col-md-6 col-sm-12 mb-1">
+                                                                    <h6>Status:</h6>
+                                                                    <select class="form-control" ng-model="produto.Status" ng-options="x.Status as x.Descricao for x in statusProduto"
+                                                                            name="Status" ng-class="formProdCad.Status.$invalid ? 'alert-danger' : ''" ng-disabled="produtoDisabled" required></select>
+                                                                </div>
+                                                                <div class="col-sm-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.Descricao.LabelTela ? templateProduto.config.Descricao.LabelTela : 'Descrição:'}}</h6>
+                                                                    <textarea class="form-control" ng-model="produto.Descricao" rows="4"
+                                                                              name="Descricao" ng-class="formProdCad.Descricao.$invalid ? 'alert-danger' : ''" ng-disabled="produtoDisabled" required></textarea>
+                                                                </div>
+                                                                <div ng-disabled="produtoDisabled || templateProduto.config.ProdGrupoId.IsNaoHabilita" class="col-xl-6 col-lg-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.ProdGrupoId.LabelTela ? templateProduto.config.ProdGrupoId.LabelTela : 'Autor:'}}<span ng-show="formProdCad.ProdGrupoId.$invalid" class="badge badge-danger float-right">Obrigatório!</span> <a href="#" ng-hide="!produtoCarregado" ng-click="gruposAbrir()" class="text-right float-right" data-toggle="modal" data-target="#mdlAutores">Mais <span class="badge badge-info">{{produto.Grupos.length}}</span></a><br></h6>
+                                                                    <input hidden name="ProdGrupoId" ng-model="produto.ProdGrupoId" ng-required="templateProduto.config.ProdGrupoId.IsObriga" />
+                                                                    <select select2 service="services/produtoService.asmx/ListaGrupoProduto" ng-model="produto.ProdGrupoId" ng-disabled="produtoDisabled || formProdCad.ProdGrupoId.$valid && templateProduto.config.ProdGrupoId.IsNaoHabilita" placeholder="Selecione o autor" allow-clear select-options="ProdGrupoId as ProdGrupoDesc in prodGrupo" class="form-control">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div ng-disabled="produtoDisabled || templateProduto.config.LinProdId.IsNaoHabilita" class="col-xl-6 col-lg-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.LinProdId.LabelTela ? templateProduto.config.LinProdId.LabelTela : 'Editora:'}}<span ng-show="formProdCad.LinProdId.$invalid" class="badge badge-danger float-right">Obrigatório!</span></h6>
+                                                                    <input hidden name="LinProdId" ng-model="produto.LinProdId" ng-required="templateProduto.config.LinProdId.IsObriga" />
+                                                                    <select select2 service="services/produtoService.asmx/ListaLinhaProduto" ng-model="produto.LinProdId" ng-disabled="produtoDisabled || formProdCad.LinProdId.$valid && templateProduto.config.LinProdId.IsNaoHabilita" placeholder="Selecione a editora" allow-clear select-options="LinProdId as LinProdDescr in prodLinha" class="form-control">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div ng-disabled="produtoDisabled || templateProduto.config.FabricanteFiltro.IsNaoHabilita" class="col-xl-6 col-lg-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.FabricanteFiltro.LabelTela ? templateProduto.config.FabricanteFiltro.LabelTela : 'Fabricante:'}}<span ng-show="formProdCad.Fabricante.$invalid" class="badge badge-danger float-right">Obrigatório!</span></h6>
+                                                                    <input hidden name="Fabricante" ng-model="produto.Fabricante" ng-required="templateProduto.config.FabricanteFiltro.IsObriga" />
+                                                                    <select select2 service="services/produtoService.asmx/ListaFornecedor" ng-filtro="produto.FabricanteFiltro" ng-model="produto.Fabricante" ng-disabled="produtoDisabled || formProdCad.Fabricante.$valid && templateProduto.config.Fabricante.IsNaoHabilita" allow-clear select-options="CodeCli as Fantasia in fornecedores" class="form-control">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 col-md-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.UnidMedId.LabelTela ? templateProduto.config.UnidMedId.LabelTela : 'Unidade Medida:'}}</h6>
+                                                                    <select ng-model="produto.UnidMedId" zero-invalido ng-options="u.UnidMedId as u.UnidMedDesc for u in unideMedida" class="form-control"
+                                                                            name="UnidMedId" ng-class="formProdCad.UnidMedId.$invalid ? 'alert-danger' : ''" ng-disabled="produtoDisabled || formProdCad.UnidMedId.$valid && templateProduto.config.UnidMedId.IsNaoHabilita" ng-required="templateProduto.config.UnidMedId.IsObriga">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 col-md-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.ProdCodCenCusto.LabelTela ? templateProduto.config.ProdCodCenCusto.LabelTela : 'Centro de Custo:'}}</h6>
+                                                                    <select ng-model="produto.ProdCodCenCusto" ng-options="p.CodCenCusto as p.Custo for p in centroCusto" class="form-control"
+                                                                            name="ProdCodCenCusto" ng-class="formProdCad.ProdCodCenCusto.$invalid ? 'alert-danger' : ''" ng-disabled="produtoDisabled || formProdCad.ProdCodCenCusto.$valid && templateProduto.config.ProdCodCenCusto.IsNaoHabilita" ng-required="templateProduto.config.ProdCodCenCusto.IsObriga">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 col-md-12 mb-1">
+                                                                    <h6>{{ templateProduto.config.CentroCustoId.LabelTela ? templateProduto.config.CentroCustoId.LabelTela : 'Plano de Conta:'}}</h6>
+                                                                    <select ng-model="produto.CentroCustoId" zero-invalido ng-options="u.CentroCustoId as u.CentroCustoDesc for u in planoConta" class="form-control"
+                                                                            name="CentroCustoId" ng-class="formProdCad.CentroCustoId.$invalid ? 'alert-danger' : ''" ng-disabled="produtoDisabled || formProdCad.CentroCustoId.$valid && templateProduto.config.CentroCustoId.IsNaoHabilita" ng-required="templateProduto.config.CentroCustoId.IsObriga">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6 col-sm-12">
+                                                            <div class="row">
+                                                                <div class="col-lg-6 col-md-12 mb-1">
+                                                                    <h6>Tipo de Produto:</h6>
+                                                                    <select ng-model="produto.IdSubCat" ng-disabled="produtoDisabled || templateProduto.TemplateId" ng-options="x.IdSubCat as x.Descricao for x in subCatProduto" class="form-control"
+                                                                            ng-change="templateRangeNcm(produto.IdSubCat)">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 col-md-12 mb-1">
+                                                                    <h6>Origem:</h6>
+                                                                    <select ng-model="produto.OrigemProd" ng-disabled="produtoDisabled || templateProduto.TemplateId" ng-options="o.OrigemId as o.OrigemDesc for o in origemProduto" class="form-control"
+                                                                            ng-change="templateRangeCst(produto.IdSubCat,produto.OrigemProd)">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 mb-1">
+                                                                    <h6>{{ templateProduto.config.PerfilPai.LabelTela ? templateProduto.config.PerfilPai.LabelTela : 'Seção:'}}</h6>
+                                                                    <select ng-model="produto.PerfilPai" zero-invalido ng-options="p.PerfilId as p.PerfilDescr for p in filtroPerfilProduto" class="form-control" name="PerfilPai"
+                                                                            ng-class="formProdCad.PerfilPai.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PerfilPai.IsObriga" ng-disabled="produtoDisabled || formProdCad.PerfilPai.$valid && (templateProduto.PerfilId || templateProduto.config.PerfilPai.IsNaoHabilita)">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 mb-1">
+                                                                    <h6>{{ templateProduto.config.PerfilConteudo.LabelTela ? templateProduto.config.PerfilConteudo.LabelTela : 'Sub Seção:'}}</h6>
+                                                                    <select ng-model="produto.PerfilConteudo" zero-invalido ng-options="p.ConteudoId as p.ConteudoDescr for p in perfilFilhoProduto | filter: {'PerfilId': produto.PerfilPai || false} | filter : templateRangeFiltarSubSecao(produto.PerfilPai)" class="form-control" name="PerfilConteudo"
+                                                                            ng-class="formProdCad.PerfilConteudo.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PerfilConteudo.IsObriga" ng-disabled="produtoDisabled || formProdCad.PerfilConteudo.$valid && (templateProduto.ConteudoId || templateProduto.config.PerfilConteudo.IsNaoHabilita)">
+                                                                        <option value=""></option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-lg-6 mb-1">
+                                                                    <h6>{{ templateProduto.config.CodBarra.LabelTela ? templateProduto.config.CodBarra.LabelTela : 'Código de Barras:'}}</h6>
+                                                                    <input type="text" ng-model="produto.CodBarra" class="form-control" name="CodBarra" ng-class="formProdCad.CodBarra.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.CodBarra.IsObriga" ng-disabled="produtoDisabled || templateProduto.config.CodBarra.IsNaoHabilita">
+                                                                </div>
+                                                                <div class="col-lg-6 mb-1">
+                                                                    <h6>{{ templateProduto.config.NovoIsbn.LabelTela ? templateProduto.config.NovoIsbn.LabelTela : 'ISBN:'}}<a href="#" ng-click="gerarEan13(produto)" ng-hide="produto.NovoIsbn" class="text-right float-right">Gerar ISBN</a><br></h6>
+                                                                    <input type="text" ng-model="produto.NovoIsbn" class="form-control" name="NovoIsbn" ng-class="formProdCad.NovoIsbn.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.NovoIsbn.IsObriga" ng-disabled="produtoDisabled || templateProduto.config.NovoIsbn.IsNaoHabilita">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-fixed-130px">
+                                            <div class="row m-0 p-1 pl-2">
+                                                <div class="col-12">
+                                                    <div class="btn-group-lg btn-group-vertical" role="group" aria-label="Basic example">
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn btn-info" ng-click="abrirPerfil()">Perfil</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn btn-info" ng-click="prodEstoqueConsulta(produto.ProdCode)">Estoque</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn btn-info" ng-click="produtoComplemListar(produto.ProdCode)" data-toggle="modal" data-target="#mdlComplementar" title="Produtos Complementares">Complem</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn btn-info" ng-click="produtoSimilarListar(produto.ProdCode)" data-toggle="modal" data-target="#mdlSimilar" title="Produtos Similares">Similar</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn btn-info" ng-click="cliProdutoListar(produto.ProdCode)" data-toggle="modal" data-target="#mdlFornecedorProduto" title="Fornecedor -> código do Produto">Cod Fornec</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn" data-toggle="modal" ng-class="produtoCarregado && formAdicionais.$invalid ? 'btn-danger' : 'btn-info'" data-target="#mdlAdicionais" title="Dados Adicionais do Produto">Adicionais</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn" data-toggle="modal" ng-class="produtoCarregado && formConvUnid.$invalid ? 'btn-danger' : 'btn-info'" data-target="#mdlConvUnid" title="Conversão de Unidade">Conv. Unid</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn" ng-class="produtoCarregado && formCusto.$invalid ? 'btn-danger' : 'btn-info'" ng-click="abrirVerCusto()" title="Custo do Produto">Ver Custo</button>
+                                                        <button ng-disabled="!produtoCarregado" type="button" class="btn btn-info" ng-click="produtoImagem(produto)" data-toggle="modal" data-target="#mdlImagem" title="Imagem do Produto">Imagem</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+
+                    <md-tab ng-disabled="!produtoCarregado">
+                        <md-tab-label>
+                            <h5>Fiscal <span ng-show="produtoCarregado && formProdFiscal.$invalid" class="badge badge-danger float-right">!</span></h5>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding">
+                                <form name="formProdFiscal">
+                                    <div class="row">
+                                        <div class="col-12 col-md-6">
+                                            <div class="row">
+                                                <div class="col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.TributarioIdEntrada.LabelTela ? templateProduto.config.TributarioIdEntrada.LabelTela : 'CST ICMS Entrada:'}}</h6>
+                                                    <select ng-model="produto.TributarioIdEntrada" ng-options="t.TributarioId as (t.TabAb + ' - ' + t.TributarioDesc) for t in tributarioEntrada| orderBy:'TabAb'" class="form-control" name="TributarioIdEntrada"
+                                                            ng-class="formProdFiscal.TributarioIdEntrada.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.TributarioIdEntrada.IsObriga" ng-disabled="templateProduto.config.TributarioIdEntrada.IsNaoHabilita">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.TributarioIdSaida.LabelTela ? templateProduto.config.TributarioIdSaida.LabelTela : 'CST ICMS Saída:'}}</h6>
+                                                    <select ng-model="produto.TributarioIdSaida" ng-options="t.TributarioId as (t.TabAb + ' - ' + t.TributarioDesc) for t in tributarioSaida| orderBy:'TabAb'" class="form-control" name="TributarioIdSaida"
+                                                            ng-class="formProdFiscal.TributarioIdSaida.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.TributarioIdSaida.IsObriga" ng-disabled="templateProduto.config.TributarioIdSaida.IsNaoHabilita">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.ClasFiscId.LabelTela ? templateProduto.config.ClasFiscId.LabelTela : 'NCM:'}}</h6>
+                                                    <select ng-model="produto.ClasFiscId" ng-options="c.ClasFiscId as (c.ClasFiscDesc + ' - ' + c.ClasFiscDetalhe)  for c in clasFisc | orderBy:'ClasFiscDesc'" class="form-control" name="ClasFiscId"
+                                                            ng-class="formProdFiscal.ClasFiscId.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.ClasFiscId.IsObriga" ng-disabled="templateProduto.config.ClasFiscId.IsNaoHabilita">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-8 col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.IdIpiEnquadramento.LabelTela ? templateProduto.config.IdIpiEnquadramento.LabelTela : 'Enquadramento IPI:'}}</h6>
+                                                    <select ng-model="produto.IdIpiEnquadramento" zero-invalido ng-options="i.Id as (i.CodIpiEnquadramento + ' - ' + i.Descricao) for i in ipiEnquadramento" class="form-control" name="IdIpiEnquadramento"
+                                                            ng-class="formProdFiscal.IdIpiEnquadramento.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.IdIpiEnquadramento.IsObriga" ng-disabled="templateProduto.config.IdIpiEnquadramento.IsNaoHabilita">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4 col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.AliqIpi.LabelTela ? templateProduto.config.AliqIpi.LabelTela : 'IPI (%):'}}</h6>
+                                                    <input input-numerico="2" input-min="0" decimal-fixo="true" zero-invalido maxlength="8" ng-model="produto.AliqIpi" type="number" class="form-control" name="AliqIpi"
+                                                           ng-class="formProdFiscal.AliqIpi.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.AliqIpi.IsObriga" ng-disabled="templateProduto.config.AliqIpi.IsNaoHabilita" />
+                                                </div>
+                                                <div class="col-md-6 col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.PesoLiq.LabelTela ? templateProduto.config.PesoLiq.LabelTela : 'Peso Liq (kg):'}}</h6>
+                                                    <input input-numerico="3" input-min="0" decimal-fixo="true" zero-invalido maxlength="8" ng-model="produto.PesoLiq" type="number" class="form-control" name="PesoLiq"
+                                                           ng-class="formProdFiscal.PesoLiq.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PesoLiq.IsObriga" ng-disabled="templateProduto.config.PesoLiq.IsNaoHabilita" />
+                                                </div>
+                                                <div class="col-md-6 col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.AtLargura.LabelTela ? templateProduto.config.AtLargura.LabelTela : 'Largura (cm):'}}</h6>
+                                                    <input input-numerico="2" input-min="0" decimal-fixo="true" zero-invalido maxlength="8" ng-model="produto.AtLargura" type="number" class="form-control" name="AtLargura"
+                                                           ng-class="formProdFiscal.AtLargura.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.AtLargura.IsObriga" ng-disabled="templateProduto.config.AtLargura.IsNaoHabilita" />
+                                                </div>
+                                                <div class="col-md-6 col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.AtAltura.LabelTela ? templateProduto.config.AtAltura.LabelTela : 'Altura (cm):'}}</h6>
+                                                    <input input-numerico="2" input-min="0" decimal-fixo="true" zero-invalido maxlength="8" ng-model="produto.AtAltura" type="number" class="form-control" name="AtAltura"
+                                                           ng-class="formProdFiscal.AtAltura.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.AtAltura.IsObriga" ng-disabled="templateProduto.config.AtAltura.IsNaoHabilita" />
+                                                </div>
+                                                <div class="col-md-6 col-sm-12 mb-1">
+                                                    <h6>{{templateProduto.config.AtComprim.LabelTela ? templateProduto.config.AtComprim.LabelTela : 'Comprimento (cm):'}}</h6>
+                                                    <input input-numerico="2" input-min="0" decimal-fixo="true" zero-invalido maxlength="8" ng-model="produto.AtComprim" type="number" class="form-control" name="AtComprim"
+                                                           ng-class="formProdFiscal.AtComprim.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.AtComprim.IsObriga" ng-disabled="templateProduto.config.AtComprim.IsNaoHabilita" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+
+                    <md-tab ng-disabled="!produtoCarregado">
+                        <md-tab-label>
+                            <h5>Preço <span ng-show="produtoCarregado && formProdPreco.$invalid" class="badge badge-danger float-right">!</span></h5>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding">
+                                <form name="formProdPreco">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-12 order-0 order-lg-1">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <h4 class="card-title">Tabela de Preço</h4>
+                                                        </div>
+                                                        <div class="col">
+                                                            <button type="button" class="btn btn-dark btn-100 float-right" ng-disabled="!produtoCarregado" data-toggle="modal" data-target="#mdlLogGeralPreco">Log</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <table class="table table-striped table-bordered">
+                                                        <thead class="thead-light">
+                                                            <tr>
+                                                                <th ng-click="sortProperty('DataTabela')" data-toggle="tooltip" title="Código">Data Tabela</th>
+                                                                <th ng-click="sortProperty('TabelaPreco.Descricao')" data-toggle="tooltip" title="ISBN">Descrição</th>
+                                                                <th ng-click="sortProperty('PrecoTab')" data-toggle="tooltip" title="Tipo">Preço Tabela</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr ng-repeat="p in produto.ProdPreco">
+                                                                <td>{{ p.DataTabela | date: 'dd/MM/yyyy HH:mm:ss'}}</td>
+                                                                <td>{{ p.TabelaPreco.Descricao }}</td>
+                                                                <td>
+                                                                    <div class="input-group input-group-sm">
+                                                                        <input type="number" min="0" input-numerico="2" maxlength="10" decimal-fixo="true" ng-model="p.PrecoTab" class="form-control" name="PrecoTab"
+                                                                               zero-invalido ng-class="formProdPreco.PrecoTab.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoTab.IsObriga" ng-disabled="templateProduto.config.PrecoTab.IsNaoHabilita" />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-12 order-1 order-lg-0">
+                                            <div class="row">
+                                                <div class="col-sm-12 col-md-4 mb-1">
+                                                    <h6>{{templateProduto.config.IdMoeda.LabelTela ? templateProduto.config.IdMoeda.LabelTela : 'Indice:'}}</h6>
+                                                    <select ng-model="produto.IdMoeda" zero-invalido ng-options="i.IdIndice as i.NomeCompletoIndice for i in indices" class="form-control" name="IdMoeda"
+                                                            ng-class="formProdPreco.IdMoeda.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.IdMoeda.IsObriga" ng-disabled="templateProduto.config.IdMoeda.IsNaoHabilita">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-sm-6 col-md-4 mb-1">
+                                                    <h6>{{templateProduto.config.DescontoMaximo.LabelTela ? templateProduto.config.DescontoMaximo.LabelTela : 'Desconto Máximo:'}}</h6>
+                                                    <input input-numerico="2" input-min="0" min="0" max="99" maxlength="5" zero-invalido ng-model="produto.DescontoMaximo" type="number" class="form-control" name="DescontoMaximo"
+                                                           ng-class="formProdPreco.DescontoMaximo.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.DescontoMaximo.IsObriga" ng-disabled="templateProduto.config.DescontoMaximo.IsNaoHabilita" />
+                                                </div>
+                                                <div class="col-sm-6  col-md-4 mb-1">
+                                                    <div class="form-check mt-1 mt-sm-4">
+                                                        <label class="form-check-label"><input ng-model="produto.IsNaoAplicaDesconto" ng-disabled="templateProduto.config.IsNaoAplicaDesconto.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> Sem Desconto</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6 col-md-6 mb-1">
+                                                    <h6>{{templateProduto.config.PrecoSite.LabelTela ? templateProduto.config.PrecoSite.LabelTela : 'Preço Fixo Site:'}}</h6>
+                                                    <input type="number" input-numerico="2" min="0" maxlength="10" zero-invalido decimal-fixo="true" ng-model="produto.PrecoSite" class="form-control" name="PrecoSite"
+                                                           ng-class="formProdPreco.PrecoSite.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoSite.IsObriga" ng-disabled="templateProduto.config.PrecoSite.IsNaoHabilita" />
+                                                </div>
+                                                <div class="col-sm-6 col-md-6 mb-1">
+                                                    <h6>{{templateProduto.config.PrecoSitePercDesc.LabelTela ? templateProduto.config.PrecoSitePercDesc.LabelTela : 'Perc. Site (%):'}}</h6>
+                                                    <input type="number" input-numerico="2" min="0" max="99" maxlength="5" zero-invalido ng-model="produto.PrecoSitePercDesc" class="form-control" name="PrecoSitePercDesc"
+                                                           ng-class="formProdPreco.PrecoSitePercDesc.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoSitePercDesc.IsObriga" ng-disabled="templateProduto.config.PrecoSitePercDesc.IsNaoHabilita" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+
+                    <md-tab ng-disabled="!produtoCarregado">
+                        <md-tab-label>
+                            <h5>Detalhes <span ng-show="produtoCarregado && formLivro.$invalid" class="badge badge-danger float-right">!</span></h5>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding">
+                                <form name="formLivro">
+                                    <div class="row">
+                                        <div class="col-sm-12 mb-1">
+                                            <h6>{{templateProduto.config.Detalhe.LabelTela ? templateProduto.config.Detalhe.LabelTela : 'Sinopse:'}}</h6>
+                                            <textarea ng-model="produto.Detalhe" rows="5" class="form-control" name="Detalhe"
+                                                      ng-class="formLivro.Detalhe.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.Detalhe.IsObriga" ng-disabled="templateProduto.config.Detalhe.IsNaoHabilita"></textarea>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.NumPaginas.LabelTela ? templateProduto.config.NumPaginas.LabelTela : 'Num. Paginas:'}}</h6>
+                                            <input input-numerico="0" input-min="0" zero-invalido maxlength="8" ng-model="produto.NumPaginas" type="number" class="form-control" name="NumPaginas"
+                                                   ng-class="formLivro.NumPaginas.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.NumPaginas.IsObriga" ng-disabled="templateProduto.config.NumPaginas.IsNaoHabilita" />
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.AnoEdicao.LabelTela ? templateProduto.config.AnoEdicao.LabelTela : 'Ano Edição:'}}</h6>
+                                            <input input-numerico="0" input-min="0" zero-invalido maxlength="4" ng-model="produto.AnoEdicao" type="number" class="form-control" name="AnoEdicao"
+                                                   ng-class="formLivro.AnoEdicao.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.AnoEdicao.IsObriga" ng-disabled="templateProduto.config.AnoEdicao.IsNaoHabilita" />
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.MesEdicao.LabelTela ? templateProduto.config.MesEdicao.LabelTela : 'Mes Edição:'}}</h6>
+                                            <input input-numerico="0" input-min="0" zero-invalido max="12" maxlength="2" ng-model="produto.MesEdicao" type="number" class="form-control" name="MesEdicao"
+                                                   ng-class="formLivro.MesEdicao.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.MesEdicao.IsObriga" ng-disabled="templateProduto.config.MesEdicao.IsNaoHabilita" />
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.NumeroEdicao.LabelTela ? templateProduto.config.NumeroEdicao.LabelTela : 'Num. Edição:'}}</h6>
+                                            <input input-numerico="0" input-min="0" zero-invalido maxlength="8" ng-model="produto.NumeroEdicao" type="number" class="form-control" name="NumeroEdicao"
+                                                   ng-class="formLivro.NumeroEdicao.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.NumeroEdicao.IsObriga" ng-disabled="templateProduto.config.NumeroEdicao.IsNaoHabilita" />
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.TipoEncadernacaoId.LabelTela ? templateProduto.config.TipoEncadernacaoId.LabelTela : 'Encadernação:'}}</h6>
+                                            <select ng-model="produto.TipoEncadernacaoId" zero-invalido ng-options="e.TipoEncadernacaoId as e.TipoEncadernacaoDescr for e in tipoEncadernacao | orderBy: 'TipoEncadernacaoDescr'" class="form-control" name="TipoEncadernacaoId"
+                                                    ng-class="formLivro.TipoEncadernacaoId.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.TipoEncadernacaoId.IsObriga" ng-disabled="templateProduto.config.TipoEncadernacaoId.IsNaoHabilita">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <div class="form-check mb-1">
+                                                <input id="chkIsLancamento" ng-model="produto.IsLancamento" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input"
+                                                       ng-disabled="templateProduto.config.IsLancamento.IsNaoHabilita">
+                                                <label for="chkIsLancamento" class="form-check-label"> {{templateProduto.config.IsLancamento.LabelTela ? templateProduto.config.IsLancamento.LabelTela : 'Lançamento'}}</label>
+                                            </div>
+                                            <input input-data maxlength="10" ng-model="produto.DataLancamento" type="text" class="form-control" name="DataLancamento"
+                                                   ng-class="formLivro.DataLancamento.$invalid ? 'alert-danger' : ''" ng-required="produto.IsLancamento" ng-disabled="!produto.IsLancamento" />
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.SituacaoProduto.IsSituacao.LabelTela ? templateProduto.config.SituacaoProduto.IsSituacao.LabelTela : 'Situação do Produto:'}}</h6>
+                                            <select ng-model="produto.SituacaoProduto" ng-options="x.DescSituacao for x in produtoSituacao track by x.IsSituacao" class="form-control" name="SituacaoProduto"
+                                                    ng-class="formLivro.SituacaoProduto.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.SituacaoProduto.IsSituacao.IsObriga" ng-disabled="templateProduto.config.SituacaoProduto.IsSituacao.IsNaoHabilita">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                        <div ng-show="produto.SituacaoProduto.IsDataSituacao" class="col-md-3 col-sm-6 mb-1">
+                                            <h6>{{templateProduto.config.DataValSituacao.LabelTela ? templateProduto.config.DataValSituacao.LabelTela : 'Data Situação:'}}</h6>
+                                            <input input-data maxlength="10" ng-model="produto.DataValSituacao" type="text" class="form-control" name="DataValSituacao"
+                                                   ng-class="produto.SituacaoProduto.IsDataSituacao && formLivro.DataValSituacao.$invalid ? 'alert-danger' : ''" ng-required="produto.SituacaoProduto.IsDataSituacao && templateProduto.config.DataValSituacao.IsObriga" ng-disabled="templateProduto.config.DataValSituacao.IsNaoHabilita" />
+                                        </div>
+                                    </div>
+                                </form>
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+
+                </md-tabs>
+            </div>
+
+            <div ng-show="tabSelectedIndex==0" class="card-footer">
+                <div class="row">
+                    <div class="col-sm-12 col-xl-4">
+                        <dir-pagination-controls max-size="10" direction-links="true" boundary-links="true"></dir-pagination-controls>
+                    </div>
+                    <div class="col-sm-6 col-xl-4 mt-sm-2 mt-xl-0">
+                        <h6>* Clique para exibir detalhes do produto</h6>
+                    </div>
+                    <div class="col-sm-6 col-xl-4 mt-sm-2 mt-xl-0">
+                        <span class="badge badge-danger float-right ml-1">Esgotado/Fora de Catálogo/Indisponível</span>
+                        <span class="badge badge-warning float-right ml-1">Em Falta</span>
+                        <span class="badge badge-primary float-right ml-1">Pré-Venda</span>
+                    </div>
+                </div>
+            </div>
+
+            <div ng-hide="tabSelectedIndex==0" class="card-footer">
+                <div class="row">
+                    <div class="col-lg-5 col-md-4 col-sm-12 order-0 order-md-1 pl-sm-5">
+                        <u>Cadastro:</u> <strong>{{produto.UsuarioCad}}</strong> <u>Data:</u> <strong>{{produto.DataCad |  date: 'dd/MM/yyyy HH:mm:ss'}}</strong>
+                        <br>
+                        <u>Alteração:</u> <strong>{{produto.UsuarioUltAlt}}</strong> <u>Data:</u> <strong>{{produto.DataUltAlt |  date: 'dd/MM/yyyy HH:mm:ss'}}</strong>
+                    </div>
+                    <div class="col-lg-7 col-md-8 col-sm-12 order-1 order-md-0 mt-md-0 mt-3">
+                        <button type="button" ng-click="salvaProduto(produto)" class="btn btn-success btn-100 mr-2" ng-disabled="formProdCad.$invalid || (produtoCarregado && ( formProdFiscal.$invalid || formProdPreco.$invalid || formLivro.$invalid || formAdicionais.$invalid || formConvUnid.$invalid || formCusto.$invalid))">Salvar</button>
+                        <button type="button" ng-click="excluirProduto(produto.ProdCode)" class="btn btn-danger btn-100 mr-2" ng-disabled="!produtoCarregado">Excluir</button>
+                        <button type="button" ng-click="limparProduto()" class="btn btn-secondary btn-100 mr-2">Limpar</button>
+                        <button type="button" ng-click="copiarProduto(produto)" class="btn btn-info btn-100 mr-2">Copiar</button>
+                        <button type="button" class="btn btn-dark btn-100 mr-2" ng-disabled="!produtoCarregado" data-toggle="modal" data-target="#mdlLogGeral">Log</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Autores-->
+    <div class="modal fade" id="mdlAutores" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Autores do Produto</strong></h5>
+                    <button type="button" ng-click="grupoShowConfirm($event)" class="close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-5 col-sm-6">
+                            <h6>Autor:</h6>
+                            <select select2 service="services/produtoService.asmx/ListaGrupoProduto" ng-model="novoGrupo.ProdGrupo.ProdGrupoId" select-selection-text="novoGrupo.ProdGrupo.ProdGrupoDesc" placeholder="Selecione o autor" select-options="ProdGrupoId as ProdGrupoDesc in prodGrupo" class="form-control">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <h6>Caregoria:</h6>
+                            <select ng-required="required" ng-model="novoGrupo.Categoria" ng-options="p.CategoriaDescr for p in prodGrupoCategorias" class="form-control">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-3 col-sm-2">
+                            <button type="button" ng-disabled="!grupoValidar(novoGrupo)" ng-click="grupoAdicionar(novoGrupo)" class="btn btn-primary  mt-4">Add</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-striped table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Autor</th>
+                                        <th>Categoria</th>
+                                        <th title="Prioridade">P</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="g in gruposTela | orderBy: '+Prioridade'">
+                                        <td>{{ g.ProdGrupo.ProdGrupoDesc }}</td>
+                                        <td>{{ g.Categoria.CategoriaDescr }}</td>
+                                        <td>{{ g.Prioridade }}</td>
+                                        <td>
+                                            <div class="btn-group float-right">
+                                                <button ng-click="gruposPrioAum(g)" ng-disabled="g.Prioridade==0" type="button" class="btn btn-sm btn-primary" title="Aumentar prioridade">&uarr;</button>
+                                                <button ng-click="gruposPrioDim(g)" ng-disabled="g.Prioridade==gruposTela.length-1" type="button" class="btn btn-sm btn-primary" title="Diminuir prioridade">&darr;</button>
+                                                <button ng-click="gruposExcluir(g)" type="button" class="btn btn-sm btn-danger" title="Excluir">Excluir</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" ng-click="gruposSalvar(gruposTela)" data-dismiss="modal">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Perfil-->
+    <div class="modal fade" id="mdlPerfil" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div id="mdlPerfilContent" class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Perfil do Produto</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row modal-body-row">
+                        <div ng-show="perfilInserindo" class="col-12 modal-body-col">
+                            <div id="treePerfilArvore" tree-view tree-selecao="perfilSelecionado" tree-checkboxes="true" tree-ocular-check-raiz="true" tree-dados="perfilTreeView"></div>
+                        </div>
+                        <div ng-hide="perfilInserindo" class="col-12 modal-body-col">
+                            <div tree-view tree-expand-all="true" tree-dados="perfilProdutoTreeView"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" ng-hide="perfilInserindo" class="btn btn-primary" ng-click="perfilInserir()">Adicionar Perfil</button>
+                    <button type="button" ng-hide="perfilInserindo" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" ng-show="perfilInserindo" class="btn btn-success" ng-click="perfilSalvar(perfilSelecionado)">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Estoque-->
+    <div class="modal fade" id="mdlEstoque" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div id="mdlEstoqueContent" class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Estoque do Produto</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form name="formEstoque">
+                        <div class="row mb-1">
+                            <div class="col-12">
+                                <h5>Filial:</h5>
+                                <select id="cboFilialEstoque" ng-model="prodEstoque.CodeCli" required ng-change="buscarEstoque(produto.ProdCode, prodEstoque.CodeCli)" ng-options="c.CodeCli as c.Fantasia for c in Filiais"
+                                        ng-class="formEstoque.CodeCli.$invalid ? 'alert-danger' : ''" name="CodeCli" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-6">
+                                <h6>Local Estoque</h6>
+                                <input type="text" maxlength="16" ng-model="prodEstoque.LocalEstoque" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <h6>Qtd Est Min</h6>
+                                <input type="number" input-numerico="2" input-min="0" maxlength="8" ng-model="prodEstoque.QttMinEstoque" class="form-control" />
+                            </div>
+                            <div class="col-3">
+                                <h6>Qtd Est Max</h6>
+                                <input type="number" input-numerico="2" input-min="0" maxlength="8" ng-model="prodEstoque.QttMaxEstoque" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <h6>Data</h6>
+                                <input type="text" readonly ng-model="prodEstoque.DataQttMinMaxEstoque" class="form-control" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-success" ng-click="prodEstoqueSalvar(prodEstoque)" ng-disabled="formEstoque.$invalid">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Complementar-->
+    <div class="modal fade" id="mdlComplementar" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Produtos Complementares</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-4">
+                            <h6>Código:</h6>
+                            <input ng-model="complementar.ProdCode" type="text" class="form-control" />
+                        </div>
+                        <div class="col-5 col-sm-6">
+                            <h6>Descricao:</h6>
+                            <select select2 service="services/produtoService.asmx/ProdutoBuscarList" ng-model="complementar.ProdCode" placeholder="Selecione o produto" allow-clear select-options="ProdCode as Descricao in prodComplementar" class="form-control"></select>
+                        </div>
+                        <div class="col-3 col-sm-2">
+                            <button type="button" ng-click="produtoComplemSalvar(produto.ProdCode, complementar.ProdCode)" class="btn btn-primary mt-4">Add</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 modal-body-col">
+                            <table class="table table-striped table-complementar w-100">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descricao</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="pc in produto.complementar | orderBy: '+Descricao'">
+                                        <td>{{ pc.ProdCodeComplem }}</td>
+                                        <td>{{ pc.ProdutoComplem.Descricao }}</td>
+                                        <td>
+                                            <button ng-click="produtoComplemExcluir(pc)" type="button" class="btn btn-danger" title="Excluir">&times;</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Similar-->
+    <div class="modal fade" id="mdlSimilar" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Produtos Similares</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-4">
+                            <h6>Código:</h6>
+                            <input ng-model="similar.ProdCode" type="text" class="form-control" />
+                        </div>
+                        <div class="col-5 col-sm-6">
+                            <h6>Descricao:</h6>
+                            <select select2 service="services/produtoService.asmx/ProdutoBuscarList" ng-model="similar.ProdCode" placeholder="Selecione o produto" allow-clear select-options="ProdCode as Descricao in prodComplementar" class="form-control"></select>
+                        </div>
+                        <div class="col-3 col-sm-2">
+                            <button type="button" ng-click="produtoSimilarSalvar(produto.ProdCode, similar.ProdCode)" class="btn btn-primary mt-4">Add</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 modal-body-col">
+                            <table class="table table-striped table-similar w-100">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descricao</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="ps in produto.similar | orderBy: '+Descricao'">
+                                        <td>{{ ps.ProdCodeSimilar }}</td>
+                                        <td>{{ ps.ProdutoSimilar.Descricao }}</td>
+                                        <td>
+                                            <button ng-click="produtoSimilarExcluir(ps)" type="button" class="btn btn-danger" title="Excluir">&times;</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dados Adicionais-->
+    <div class="modal fade" id="mdlAdicionais" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Dados Adicionais</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form name="formAdicionais">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="form-check">
+                                    <label class="form-check-label"><input ng-model="produto.ProdutoDadosAdicionaisSite.IsLancamento" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.IsLancament.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.ProdutoDadosAdicionaisSite.IsLancament.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.IsLancament.LabelTela : 'Lançamento'}}</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-check">
+                                    <label class="form-check-label"><input ng-model="produto.ProdutoDadosAdicionaisSite.IsDestaque" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.IsDestaque.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.ProdutoDadosAdicionaisSite.IsDestaque.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.IsDestaque.LabelTela : 'Destaque'}}</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-check">
+                                    <label class="form-check-label"><input ng-model="produto.ProdutoDadosAdicionaisSite.IsOferta" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.IsOferta.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.ProdutoDadosAdicionaisSite.IsOferta.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.IsOferta.LabelTela : 'Oferta'}}</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-check">
+                                    <label class="form-check-label"><input ng-model="produto.ProdutoDadosAdicionaisSite.IsMaisVendido" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.IsMaisVendido.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.ProdutoDadosAdicionaisSite.IsMaisVendido.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.IsMaisVendido.LabelTela : 'Mais Vendido'}}</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-check">
+                                    <label class="form-check-label"><input ng-model="produto.ProdutoDadosAdicionaisSite.IsRecomendado" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.IsRecomendado.IsNaoHabilita" type="checkbox" ng-true-value="1" ng-false-value="0" class="form-check-input" /> {{templateProduto.config.ProdutoDadosAdicionaisSite.IsRecomendado.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.IsRecomendado.LabelTela : 'Recomentado'}}</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-1">
+                                <h6>{{templateProduto.config.ProdutoDadosAdicionaisSite.MetaDescription.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.MetaDescription.LabelTela : 'Site Meta Description:'}}</h6>
+                                <textarea cols="3" maxlength="1000" ng-model="produto.ProdutoDadosAdicionaisSite.MetaDescription" name="MetaDescription" class="form-control"
+                                          ng-class="formAdicionais.MetaDescription.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.ProdutoDadosAdicionaisSite.MetaDescription.IsObriga" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.MetaDescription.IsNaoHabilita"></textarea>
+                            </div>
+                            <div class="col-12 mb-1">
+                                <h6>{{templateProduto.config.ProdutoDadosAdicionaisSite.MetaKeyWords.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.MetaKeyWords.LabelTela : 'Site Meta Keyword:'}}</h6>
+                                <textarea cols="3" maxlength="1000" ng-model="produto.ProdutoDadosAdicionaisSite.MetaKeyWords" name="MetaKeyWords" class="form-control"
+                                          ng-class="formAdicionais.MetaKeyWords.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.ProdutoDadosAdicionaisSite.MetaKeyWords.IsObriga" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.MetaKeyWords.IsNaoHabilita"></textarea>
+                            </div>
+                            <div class="col-12 mb-1">
+                                <h6>{{templateProduto.config.ProdutoDadosAdicionaisSite.PalavrasSubstitutas.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.PalavrasSubstitutas.LabelTela : 'Palavras Substitutas:'}}</h6>
+                                <textarea cols="3" maxlength="250" ng-model="produto.ProdutoDadosAdicionaisSite.PalavrasSubstitutas" name="PalavrasSubstitutas" class="form-control"
+                                          ng-class="formAdicionais.PalavrasSubstitutas.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.ProdutoDadosAdicionaisSite.PalavrasSubstitutas.IsObriga" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.PalavrasSubstitutas.IsNaoHabilita"></textarea>
+                            </div>
+                            <div class="col-12 mb-1">
+                                <h6>{{templateProduto.config.ProdutoDadosAdicionaisSite.TextoLink.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.TextoLink.LabelTela : 'Texto Link:'}}</h6>
+                                <textarea cols="3" maxlength="250" ng-model="produto.ProdutoDadosAdicionaisSite.TextoLink" name="TextoLink" class="form-control"
+                                          ng-class="formAdicionais.TextoLink.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.ProdutoDadosAdicionaisSite.TextoLink.IsObriga" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.TextoLink.IsNaoHabilita"></textarea>
+                            </div>
+                            <div class="col-12 mb-1">
+                                <h6>{{templateProduto.config.ProdutoDadosAdicionaisSite.TagTitle.LabelTela ? templateProduto.config.ProdutoDadosAdicionaisSite.TagTitle.LabelTela : 'Título da Página (Tag Title):'}}</h6>
+                                <textarea cols="3" maxlength="250" ng-model="produto.ProdutoDadosAdicionaisSite.TagTitle" name="TagTitle" class="form-control"
+                                          ng-class="formAdicionais.TagTitle.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.ProdutoDadosAdicionaisSite.TagTitle.IsObriga" ng-disabled="templateProduto.config.ProdutoDadosAdicionaisSite.TagTitle.IsNaoHabilita"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Conversão de Unidade-->
+    <div class="modal fade" id="mdlConvUnid" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Conversão de Unidade de Compra</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form name="formConvUnid">
+                        <div class="row">
+
+                            <div class="col-4 mb-1">
+                                <h6>{{templateProduto.config.ProdutoUnidMed.UnidMedIdCompra.LabelTela ? templateProduto.config.ProdutoUnidMed.UnidMedIdCompra.LabelTela : 'Unid. Compra:'}}</h6>
+                                <select ng-model="produto.ProdutoUnidMed.UnidMedIdCompra" zero-invalido ng-options="u.UnidMedId as u.UnidMedDesc for u in unideMedida" class="form-control"
+                                        name="UnidMedIdCompra" ng-class="formConvUnid.UnidMedIdCompra.$invalid ? 'alert-danger' : ''" ng-disabled="formConvUnid.UnidMedIdCompra.$valid && templateProduto.config.ProdutoUnidMed.UnidMedIdCompra.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.UnidMedIdCompra.IsObriga">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="col-5 mb-1">
+                                <h6>{{templateProduto.config.ProdutoUnidMed.TxConversaoCompraEstoque.LabelTela ? templateProduto.config.ProdutoUnidMed.TxConversaoCompraEstoque.LabelTela : 'Compra -> Estoque:'}}</h6>
+                                <input type="number" input-numerico="4" min="0" zero-invalido maxlength="8" class="form-control" name="TxConversaoCompraEstoque"
+                                       ng-model="produto.ProdutoUnidMed.TxConversaoCompraEstoque" ng-disabled="formConvUnid.TxConversaoCompraEstoque.$valid && templateProduto.config.ProdutoUnidMed.TxConversaoCompraEstoque.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.TxConversaoCompraEstoque.IsObriga || produto.ProdutoUnidMed.TpOperacaoCompraEstoque"
+                                       ng-class="formConvUnid.TxConversaoCompraEstoque.$invalid ? 'alert-danger' : ''" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 title="Operador">{{templateProduto.config.ProdutoUnidMed.TpOperacaoCompraEstoque.LabelTela ? templateProduto.config.ProdutoUnidMed.TpOperacaoCompraEstoque.LabelTela : 'Oper:'}}</h6>
+                                <select ng-options="o.Operador as o.Descricao for o in convUnidOperador" class="form-control" name="TpOperacaoCompraEstoque"
+                                        ng-model="produto.ProdutoUnidMed.TpOperacaoCompraEstoque" ng-disabled="formConvUnid.TpOperacaoCompraEstoque.$valid && templateProduto.config.ProdutoUnidMed.TpOperacaoCompraEstoque.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.TpOperacaoCompraEstoque.IsObriga || produto.ProdutoUnidMed.TpOperacaoCompraEstoque"
+                                        ng-class="formConvUnid.TpOperacaoCompraEstoque.$invalid ? 'alert-danger' : ''">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+
+                            <div class="col-4 mb-1">
+                                <h6>{{templateProduto.config.ProdutoUnidMed.UnidMedIdCusto.LabelTela ? templateProduto.config.ProdutoUnidMed.UnidMedIdCusto.LabelTela : 'Unid. Custo:'}}</h6>
+                                <select ng-model="produto.ProdutoUnidMed.UnidMedIdCusto" zero-invalido ng-options="u.UnidMedId as u.UnidMedDesc for u in unideMedida" class="form-control"
+                                        name="UnidMedIdCusto" ng-class="formConvUnid.UnidMedIdCusto.$invalid ? 'alert-danger' : ''" ng-disabled="formConvUnid.UnidMedIdCusto.$valid && templateProduto.config.ProdutoUnidMed.UnidMedIdCusto.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.UnidMedIdCusto.IsObriga">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="col-5 mb-1">
+                                <h6>{{templateProduto.config.ProdutoUnidMed.TxConversaoCompraCusto.LabelTela ? templateProduto.config.ProdutoUnidMed.TxConversaoCompraCusto.LabelTela : 'Compra -> Custo:'}}</h6>
+                                <input type="number" input-numerico="4" min="0" zero-invalido maxlength="8" class="form-control" name="TxConversaoCompraCusto"
+                                       ng-model="produto.ProdutoUnidMed.TxConversaoCompraCusto" ng-disabled="formConvUnid.TxConversaoCompraCusto.$valid && templateProduto.config.ProdutoUnidMed.TxConversaoCompraCusto.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.TxConversaoCompraCusto.IsObriga || produto.ProdutoUnidMed.TpOperacaoCompraCusto"
+                                       ng-class="formConvUnid.TxConversaoCompraCusto.$invalid ? 'alert-danger' : ''" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 title="Operador">{{templateProduto.config.ProdutoUnidMed.TpOperacaoCompraCusto.LabelTela ? templateProduto.config.ProdutoUnidMed.TpOperacaoCompraCusto.LabelTela : 'Oper:'}}</h6>
+                                <select ng-options="o.Operador as o.Descricao for o in convUnidOperador" class="form-control" name="TpOperacaoCompraCusto"
+                                        ng-model="produto.ProdutoUnidMed.TpOperacaoCompraCusto" ng-disabled="formConvUnid.TpOperacaoCompraCusto.$valid && templateProduto.config.ProdutoUnidMed.TpOperacaoCompraCusto.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.TpOperacaoCompraCusto.IsObriga || produto.ProdutoUnidMed.TxConversaoCompraCusto"
+                                        ng-class="formConvUnid.TpOperacaoCompraCusto.$invalid ? 'alert-danger' : ''">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+
+                            <div class="col-4 mb-1">
+                                <h6>{{templateProduto.config.ProdutoUnidMed.UnidMedIdEstoque.LabelTela ? templateProduto.config.ProdutoUnidMed.UnidMedIdEstoque.LabelTela : 'Unid. Estoque:'}}</h6>
+                                <select ng-model="produto.ProdutoUnidMed.UnidMedIdEstoque" zero-invalido ng-options="u.UnidMedId as u.UnidMedDesc for u in unideMedida" class="form-control"
+                                        name="UnidMedIdEstoque" ng-class="formConvUnid.UnidMedIdEstoque.$invalid ? 'alert-danger' : ''" ng-disabled="formConvUnid.UnidMedIdEstoque.$valid && templateProduto.config.ProdutoUnidMed.UnidMedIdEstoque.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.UnidMedIdEstoque.IsObriga">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="col-5 mb-1">
+                                <h6>{{templateProduto.config.ProdutoUnidMed.TxConversaoEstoqueCusto.LabelTela ? templateProduto.config.ProdutoUnidMed.TxConversaoEstoqueCusto.LabelTela : 'Estoque -> Custo:'}}</h6>
+                                <input type="number" input-numerico="4" min="0" zero-invalido maxlength="8" class="form-control" name="TxConversaoEstoqueCusto"
+                                       ng-model="produto.ProdutoUnidMed.TxConversaoEstoqueCusto" ng-disabled="formConvUnid.TxConversaoEstoqueCusto.$valid && templateProduto.config.ProdutoUnidMed.TxConversaoEstoqueCusto.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.TxConversaoEstoqueCusto.IsObriga || produto.ProdutoUnidMed.TpOperacaoEstoqueCusto"
+                                       ng-class="formConvUnid.TxConversaoEstoqueCusto.$invalid ? 'alert-danger' : ''" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 title="Operador">{{templateProduto.config.ProdutoUnidMed.TpOperacaoEstoqueCusto.LabelTela ? templateProduto.config.ProdutoUnidMed.TpOperacaoEstoqueCusto.LabelTela : 'Oper:'}}</h6>
+                                <select ng-options="o.Operador as o.Descricao for o in convUnidOperador" class="form-control" name="TpOperacaoEstoqueCusto"
+                                        ng-model="produto.ProdutoUnidMed.TpOperacaoEstoqueCusto" ng-disabled="formConvUnid.TpOperacaoEstoqueCusto.$valid && templateProduto.config.ProdutoUnidMed.TpOperacaoEstoqueCusto.IsNaoHabilita" ng-required="templateProduto.config.ProdutoUnidMed.TpOperacaoEstoqueCusto.IsObriga || produto.ProdutoUnidMed.TxConversaoEstoqueCusto"
+                                        ng-class="formConvUnid.TpOperacaoEstoqueCusto.$invalid ? 'alert-danger' : ''">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Custo-->
+    <div class="modal fade" id="mdlCusto" role="dialog" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-custo">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Custo do Produto <label ng-show="!custoAlterar" class="text-danger">[Não tem permissão para altera o custo 'PRODUTO_CUSTO']</label></strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form name="formCusto">
+                        <div class="row">
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.DataCusto.LabelTela ? templateProduto.config.DataCusto.LabelTela : 'Data Custo:'}}</h6>
+                                <input type="text" input-data maxlength="10" ng-model="produto.DataCusto" class="form-control" name="DataCusto"
+                                       ng-class="formCusto.DataCusto.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.DataCusto.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.DataCusto.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.CustoVariacao.LabelTela ? templateProduto.config.CustoVariacao.LabelTela : '% Variação Estimada(+/-):'}}</h6>
+                                <input type="number" ng-model="produto.CustoVariacao" class="form-control" name="CustoVariacao"
+                                       ng-class="formCusto.CustoVariacao.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.CustoVariacao.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.CustoVariacao.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PrecoMaxVerba.LabelTela ? templateProduto.config.PrecoMaxVerba.LabelTela : 'Preço Máximo Verba(R$):'}}</h6>
+                                <input type="number" ng-model="produto.PrecoMaxVerba" input-numerico="2" input-min="0" zero-invalido maxlength="12" decimal-fixo="true" class="form-control" name="PrecoMaxVerba"
+                                       ng-class="formCusto.PrecoMaxVerba.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoMaxVerba.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PrecoMaxVerba.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PrecoCusto.LabelTela ? templateProduto.config.PrecoCusto.LabelTela : 'Custo Médio(R$):'}}</h6>
+                                <input type="number" ng-model="produto.PrecoCusto" input-numerico="4" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="PrecoCusto"
+                                       ng-class="formCusto.PrecoCusto.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoCusto.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PrecoCusto.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.CustoEstimado.LabelTela ? templateProduto.config.CustoEstimado.LabelTela : 'Custo Estimado Fixo(R$):'}}</h6>
+                                <input type="number" ng-model="produto.CustoEstimado" input-numerico="4" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="CustoEstimado"
+                                       ng-class="formCusto.CustoEstimado.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.CustoEstimado.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.CustoEstimado.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.CustoUltCompra.LabelTela ? templateProduto.config.CustoUltCompra.LabelTela : 'Último Custo(R$):'}}</h6>
+                                <input type="number" ng-model="produto.CustoUltCompra" input-numerico="4" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="CustoUltCompra"
+                                       ng-class="formCusto.CustoUltCompra.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.CustoUltCompra.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.CustoUltCompra.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PrecoAVista.LabelTela ? templateProduto.config.PrecoAVista.LabelTela : 'Vl a Vista:'}}</h6>
+                                <input type="number" ng-model="produto.PrecoAVista" input-numerico="2" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="PrecoAVista"
+                                       ng-class="formCusto.PrecoAVista.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoAVista.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PrecoAVista.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PrecoCustoDolar.LabelTela ? templateProduto.config.PrecoCustoDolar.LabelTela : 'Custo Médio(U$):'}}</h6>
+                                <input type="number" ng-model="produto.PrecoCustoDolar" input-numerico="4" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="PrecoCustoDolar"
+                                       ng-class="formCusto.PrecoCustoDolar.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoCustoDolar.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PrecoCustoDolar.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.CustoEstimadoDolar.LabelTela ? templateProduto.config.CustoEstimadoDolar.LabelTela : 'Custo Estimado Fixo(U$):'}}</h6>
+                                <input type="number" ng-model="produto.CustoEstimadoDolar" input-numerico="4" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="CustoEstimadoDolar"
+                                       ng-class="formCusto.CustoEstimadoDolar.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.CustoEstimadoDolar.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.CustoEstimadoDolar.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.CustoUltCompraDolar.LabelTela ? templateProduto.config.CustoUltCompraDolar.LabelTela : 'Último Custo(U$):'}}</h6>
+                                <input type="number" ng-model="produto.CustoUltCompraDolar" input-numerico="4" input-min="0" zero-invalido maxlength="14" decimal-fixo="true" class="form-control" name="CustoUltCompraDolar"
+                                       ng-class="formCusto.CustoUltCompraDolar.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.CustoUltCompraDolar.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.CustoUltCompraDolar.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PrecoAPrazo.LabelTela ? templateProduto.config.PrecoAPrazo.LabelTela : 'Vl a Prazo:'}}</h6>
+                                <input type="number" ng-model="produto.PrecoAPrazo" input-numerico="2" input-min="0" zero-invalido maxlength="12" decimal-fixo="true" class="form-control" name="PrecoAPrazo"
+                                       ng-class="formCusto.PrecoAPrazo.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoAPrazo.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PrecoAPrazo.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PercMargemMinima.LabelTela ? templateProduto.config.PercMargemMinima.LabelTela : 'Margem(%):'}}</h6>
+                                <input type="number" ng-model="produto.PercMargemMinima" input-numerico="2" input-min="0" input-max="99" zero-invalido maxlength="8" class="form-control" name="PercMargemMinima"
+                                       ng-class="formCusto.PercMargemMinima.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PercMargemMinima.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PercMargemMinima.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <h6 class="font-1">{{templateProduto.config.PrecoMinimo.LabelTela ? templateProduto.config.PrecoMinimo.LabelTela : 'Preço Min(R$):'}}</h6>
+                                <input type="number" ng-model="produto.PrecoMinimo" input-numerico="2" input-min="0" zero-invalido maxlength="12" decimal-fixo="true" class="form-control" name="PrecoMinimo"
+                                       ng-class="formCusto.PrecoMinimo.$invalid ? 'alert-danger' : ''" ng-required="templateProduto.config.PrecoMinimo.IsObriga" ng-disabled="!custoAlterar || templateProduto.config.PrecoMinimo.IsNaoHabilita" />
+                            </div>
+                            <div class="col-3 mb-1">
+                                <div class="form-check mt-4">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" ng-model="produto.IsPrecoMinimoFix" ng-true-value="1" ng-false-value="0" class="form-check-input"
+                                               ng-disabled="!custoAlterar || templateProduto.config.IsPrecoMinimoFix.IsNaoHabilita" /> {{templateProduto.config.IsPrecoMinimoFix.LabelTela ? templateProduto.config.IsPrecoMinimoFix.LabelTela : 'Mínimo Fixado'}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer p-2">
+                    <div class="row w-100 p-0 m-0">
+                        <div class="col-6">
+                            <button type="button" data-toggle="modal" data-target="#mdlLogCusto" ng-click="custoLogCarregar(produto.ProdCode)" class="btn btn-info float-left">Histórico</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Custo Historico-->
+    <div class="modal fade" id="mdlLogCusto" role="dialog" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-custo">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Histórido de Custo</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-logCusto header-fixed table-striped table-similar w-100">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Custo Antigo</th>
+                                        <th>Custo Novo</th>
+                                        <th>Custo NF</th>
+                                        <th>NF</th>
+                                        <th>Usuário</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="l in logHistorico | orderBy: '-DataAlt'">
+                                        <td>{{l.DataCad|date: 'dd/MM/yyyy HH:mm:ss'}}</td>
+                                        <td>{{l.UltimoCusto|number:2}}</td>
+                                        <td>{{l.CustoNovo|number:2}}</td>
+                                        <td>{{l.CustoNf|number:2}}</td>
+                                        <td>{{l.Nf}}</td>
+                                        <td>{{l.UsuarioCad}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Fornecedor Codigo-->
+    <div class="modal fade" id="mdlFornecedorProduto" role="dialog" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Fornecedor -> Código de Produto</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-5 col-sm-6">
+                            <h6>Fornecedor:</h6>
+                            <select select2 service="services/produtoService.asmx/ListaFornecedor" ng-model="cliProduto.Codecli" placeholder="Selecione o fornecedor" allow-clear select-options="CodeCli as Fantasia in fornecedores" class="form-control"></select>
+                        </div>
+                        <div class="col-4">
+                            <h6>Código:</h6>
+                            <input ng-model="cliProduto.ProdCodeCli" type="text" class="form-control" />
+                        </div>
+                        <div class="col-3 col-sm-2">
+                            <button type="button" ng-click="cliProdutoSalvar(produto.ProdCode, cliProduto)" class="btn btn-primary mt-4">Add</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 modal-body-col">
+                            <table class="table table-striped table-similar w-100">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descricao</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="cp in produto.cliProduto | orderBy: '+Descricao'">
+                                        <td>{{ cp.ProdCodeCli }}</td>
+                                        <td>{{ cp.Fornecedor.Fantasia }}</td>
+                                        <td>
+                                            <button ng-click="cliProdutoExcluir(cp)" type="button" class="btn btn-danger" title="Excluir">&times;</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Image-->
+    <div class="modal fade" id="mdlImagem" role="dialog" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-Imagem">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white rounded m-1 pt-2 pb-2">
+                    <h5 class="modal-title"><strong>Imagem do Produto</strong></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-8">
+                            <input type="file" file-model="produto.ImagemUpload" accept=".jpg,.png,.bmp" class="form-control form-control-file" ng-required="true" />
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="btn btn-dark btn-100" ng-disabled="!produto.ImagemUpload" ng-click='produtoImagemUpload(produto)'>Upload</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <img produto-img="produto.Imagem" path-imagem="{{pathImagemProduto}}" class="img-thumbnail imgProduto" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <modal-log-geral title="Log do Produto" dialog-name="mdlLogGeral" log-modulo="14" chave1="produto.ProdCode"></modal-log-geral>
+    <modal-log-geral title="Log de Preço do Produto" dialog-name="mdlLogGeralPreco" log-modulo="10" chave1="produto.ProdCode"></modal-log-geral>
+</body>
+</html>
